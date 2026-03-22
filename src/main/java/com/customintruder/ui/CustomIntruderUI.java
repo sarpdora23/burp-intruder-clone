@@ -62,6 +62,12 @@ public class CustomIntruderUI extends JPanel {
         splitPane.setContinuousLayout(true);
         configTab.add(splitPane, BorderLayout.CENTER);
         
+        rightSideTabs.addChangeListener(e -> {
+            if (rightSideTabs.getSelectedComponent() == payloadsPanel) {
+                payloadsPanel.updatePayloadSetsCount(targetPositionsPanel.getMarkerCount());
+            }
+        });
+        
         // --- 2. ADD TO ROOT TABS
         rootTabs.addTab("Configuration", configTab);
         rootTabs.addTab("Results", resultsPanel);
@@ -96,8 +102,11 @@ public class CustomIntruderUI extends JPanel {
                 return;
             }
             
-            java.util.List<String> wordlist = payloadsPanel.getPayloads();
-            if (wordlist.isEmpty()) {
+            // Auto update once just before attack
+            payloadsPanel.updatePayloadSetsCount(templater.getMarkerCount());
+            
+            java.util.List<java.util.List<String>> payloadSets = payloadsPanel.getAllPayloadSets();
+            if (payloadSets.isEmpty() || payloadSets.get(0).isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Payload list is empty!");
                 return;
             }
@@ -112,7 +121,7 @@ public class CustomIntruderUI extends JPanel {
             
             com.customintruder.engine.AttackEngine engine = new com.customintruder.engine.AttackEngine(api, resultsPanel, attackType);
             resultsPanel.setEngine(engine);
-            engine.startAttack(service, templater, wordlist, threads, throttle);
+            engine.startAttack(service, templater, payloadSets, threads, throttle);
             
         } catch (Exception ex) {
             api.logging().logToError("Error launching attack: " + ex.getMessage());

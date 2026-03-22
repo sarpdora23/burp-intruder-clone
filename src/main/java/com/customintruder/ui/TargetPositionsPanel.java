@@ -114,4 +114,20 @@ public class TargetPositionsPanel extends JPanel {
     public burp.api.montoya.http.HttpService getHttpService() {
         return requestEditor.getRequest() != null ? requestEditor.getRequest().httpService() : null;
     }
+    
+    public int getMarkerCount() {
+        if (requestEditor.getRequest() == null) return 0;
+        byte[] currentData = requestEditor.getRequest().toByteArray().getBytes();
+        int count = 0;
+        byte marker = (byte) '§'; // fallback mapping
+        try {
+            byte[] mBytes = "§".getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
+            marker = mBytes[0];
+        } catch (Exception ignored) {}
+        
+        for (byte b : currentData) {
+            if (b == marker) count++;
+        }
+        return count / 2; // Pairs of markers
+    }
 }
